@@ -1,11 +1,11 @@
-import User from "../models/user.model.js";
-import bcrypt from "bcrypt";
+import { User } from "../models/user.model.js";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
   try {
-    const { fullname, email, phonenumber, password, role } = req.body;
-    if (!fullname || !email || !phonenumber || !password || !role) {
+    const { fullname, email, phoneNumber, password, role } = req.body;
+    if (!fullname || !email || !phoneNumber || !password || !role) {
       return res.status(404).json({
         message: "Missing required fields",
         success: false,
@@ -23,10 +23,12 @@ export const register = async (req, res) => {
     const newUser = new User({
       fullname,
       email,
-      phonenumber,
+      phoneNumber,
       password: hashedPassword,
       role,
     });
+    await newUser.save();
+
     return res.status(200).json({
       message: `Account created successfully  ${fullname}`,
       success: true,
@@ -81,7 +83,7 @@ export const login = async (req, res) => {
       _id: user._id,
       fullname: user.fullname,
       email: user.email,
-      phonenumber: user.phonenumber,
+      phoneNumber: user.phoneNumber,
       role: user.role,
       profile: user.profile,
     };
@@ -150,7 +152,7 @@ export const updateProfile = async (req, res) => {
     }
     user.fullname = fullname;
     user.email = email;
-    user.phonenumber = phonenumber;
+    user.phoneNumber = phonenumber;
     user.profile.bio = bio;
     user.skills = skillsArray;
     await user.save();
@@ -158,7 +160,7 @@ export const updateProfile = async (req, res) => {
       _id: user._id,
       fullname: user.fullname,
       email: user.email,
-      phonenumber: user.phonenumber,
+      phonenumber: user.phoneNumber,
       role: user.role,
       profile: user.profile,
     };

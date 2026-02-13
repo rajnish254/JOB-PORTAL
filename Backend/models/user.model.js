@@ -15,13 +15,13 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    passqword: {
+    password: {
       type: String,
       required: true,
     },
     role: {
       type: String,
-      enum: ["student", "Recruiter"],
+      enum: ["student", "recruiter"],
       default: "student",
       required: true,
     },
