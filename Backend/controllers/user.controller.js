@@ -132,17 +132,13 @@ export const updateProfile = async (req, res) => {
   try {
     const { fullname, email, phonenumber, bio, skills } = req.body;
     const file = req.files;
-    if (!fullname || !email || !phonenumber || !bio || !skills) {
-      return res.status(404).json({
-        message: "Missing required fields",
-        success: false,
-      });
-    }
 
     //cloudinary upload
-
-    const skillsArray = skills.split(",");
-    const userId = req.id; //middleware authentication
+    let skillsArray;
+    if (skills) {
+      skillsArray = skills.split(",");
+    }
+    const userId = req.userId; //middleware authentication
     let user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -150,11 +146,23 @@ export const updateProfile = async (req, res) => {
         success: false,
       });
     }
-    user.fullname = fullname;
-    user.email = email;
-    user.phoneNumber = phonenumber;
-    user.profile.bio = bio;
-    user.skills = skillsArray;
+
+    // update database profile
+    if (fullname) {
+      user.fullname = fullname;
+    }
+    if (email) {
+      user.email = email;
+    }
+    if (phonenumber) {
+      user.phoneNumber = phonenumber;
+    }
+    if (bio) {
+      user.profile.bio = bio;
+    }
+    if (skills) {
+      user.profile.skills = skillsArray;
+    }
     await user.save();
     user = {
       _id: user._id,
