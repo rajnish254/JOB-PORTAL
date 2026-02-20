@@ -9,9 +9,10 @@ import { Button } from "../ui/button";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { User2 } from "lucide-react";
 import { LogOut } from "lucide-react";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const user = false;
+  const { user } = useSelector((store) => store.auth);
   return (
     <div className="bg-white">
       <div className="flex items-center justify-between mx-auto max-w-7xl h-16">
@@ -23,9 +24,15 @@ const Navbar = () => {
         </div>
         <div className="flex items-center gap-10">
           <ul className="flex font-medium items-center gap-6">
-            <Link to={"/Home"}>Home</Link>
-            <li>Browse</li>
-            <Link to={"/Jobs"}>Jobs</Link>
+            <li>
+              <Link to={"/Home"}>Home</Link>
+            </li>
+            <li>
+              <Link to={"/Browse"}>Browse</Link>
+            </li>
+            <li>
+              <Link to={"/Jobs"}>Jobs</Link>
+            </li>
           </ul>
           {!user ? (
             <div className="flex items-center gap-2">
@@ -41,37 +48,47 @@ const Navbar = () => {
           ) : (
             <Popover>
               <PopoverTrigger asChild>
-                <Avatar className="cursor-pointer">
+                <Avatar className="cursor-pointer h-10 w-10">
                   <AvatarImage
                     src="https://github.com/evilrabbit.png"
-                    alt="@evilrabbit"
+                    alt="profile"
                   />
                 </Avatar>
               </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="flex items-center gap-4 space-y-2">
-                  <Avatar className="cursor-pointer">
+
+              <PopoverContent
+                align="end"
+                className="w-72 bg-white rounded-lg shadow-xl border border-gray-200 p-4"
+              >
+                {/* User Info */}
+                <div className="flex items-start gap-3 pb-3 border-b border-gray-200">
+                  <Avatar className="h-12 w-12">
                     <AvatarImage
                       src="https://github.com/evilrabbit.png"
-                      alt="@evilrabbit"
+                      alt="profile"
                     />
                   </Avatar>
+
                   <div>
-                    <h3 className="font-medium">Rajnish kumar</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit
+                    <h3 className="font-semibold text-gray-900">
+                      Rajnish Kumar
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col mt-2 text-gray-600 ">
-                  <div className="flex w-fit items-center gap-2 cursor-pointer">
-                    <User2></User2>
-                    <Button variant="link">Profile</Button>
+
+                {/* Options */}
+                <Link to="/profile">
+                  <div className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-gray-100 transition">
+                    <User2 className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-700">Profile</span>
                   </div>
-                  <div className="flex w-fit items-center gap-2 cursor-pointer">
-                    <LogOut></LogOut>
-                    <Button variant="link">Logout</Button>
-                  </div>
+                </Link>
+                <div className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-gray-100 transition">
+                  <LogOut className="w-5 h-5 text-gray-600" />
+                  <span className="font-medium text-gray-700">Logout</span>
                 </div>
               </PopoverContent>
             </Popover>

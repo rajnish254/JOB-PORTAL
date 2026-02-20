@@ -9,7 +9,7 @@ import { USER_API_ENDPOINT } from "../../utils/data.js";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { setLoading } from "../../redux/authSlice.js";
+import { setLoading, setUser } from "../../redux/authSlice.js";
 import { Button } from "../ui/button.jsx";
 import { Loader2 } from "lucide-react";
 
@@ -44,6 +44,7 @@ const Login = () => {
         withCredentials: true, // Include cookies in the request
       });
       if (res.data.success) {
+        dispatch(setUser(res.data.user));
         navigate("/"); // Navigate to home page after successful login
         toast.success(res.data.message);
       }
