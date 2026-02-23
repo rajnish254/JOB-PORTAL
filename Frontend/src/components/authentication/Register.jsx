@@ -167,13 +167,20 @@ const Register = () => {
             />
           </div>
 
-          {/* Button */}
-          <button
-            type="submit"
-            className="w-full bg-black hover:bg-green-800 text-white py-2 rounded-md"
-          >
-            Register
-          </button>
+          {/* Conditional Button Rendering */}
+          {loading ? (
+            <Button className="w-full my-4 bg-black">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Please wait
+            </Button>
+          ) : (
+            <button
+              type="submit"
+              className="w-full bg-black hover:bg-green-800 text-white py-2 rounded-md my-4"
+            >
+              Register
+            </button>
+          )}
 
           {/* Login Link */}
           <p className="text-sm text-gray-500 mt-3 text-center">

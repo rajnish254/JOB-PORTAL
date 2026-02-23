@@ -4,15 +4,37 @@ import {
   PopoverTrigger,
 } from "@radix-ui/react-popover";
 import React from "react";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { User2 } from "lucide-react";
 import { LogOut } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "@/redux/authSlice";
+import { toast } from "sonner";
+import { USER_API_ENDPOINT } from "@/utils/data";
 
 const Navbar = () => {
   const { user } = useSelector((store) => store.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const logoutHandler = async () => {
+    try {
+      const response = await axios.post(`${USER_API_ENDPOINT}/logout`, {
+        withCreentials: true,
+      });
+      if (response.data.success) {
+        dispatch(setUser(null));
+        navigate("/");
+        toast.success("Logged out successfully");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
   return (
     <div className="bg-white">
       <div className="flex items-center justify-between mx-auto max-w-7xl h-16">
@@ -50,7 +72,7 @@ const Navbar = () => {
               <PopoverTrigger asChild>
                 <Avatar className="cursor-pointer h-10 w-10">
                   <AvatarImage
-                    src="https://github.com/evilrabbit.png"
+                    src={user?.profile?.profilePhoto}
                     alt="profile"
                   />
                 </Avatar>
@@ -64,17 +86,17 @@ const Navbar = () => {
                 <div className="flex items-start gap-3 pb-3 border-b border-gray-200">
                   <Avatar className="h-12 w-12">
                     <AvatarImage
-                      src="https://github.com/evilrabbit.png"
+                      src={user.profile?.profilePhoto}
                       alt="profile"
                     />
                   </Avatar>
 
                   <div>
                     <h3 className="font-semibold text-gray-900">
-                      Rajnish Kumar
+                      {user?.fullname}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                      {user?.profile?.bio || "No bio added yet"}
                     </p>
                   </div>
                 </div>
@@ -86,9 +108,11 @@ const Navbar = () => {
                     <span className="font-medium text-gray-700">Profile</span>
                   </div>
                 </Link>
-                <div className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-gray-100 transition">
-                  <LogOut className="w-5 h-5 text-gray-600" />
-                  <span className="font-medium text-gray-700">Logout</span>
+                <div className="flex w-fit items-center gap-2 cursor-pointer">
+                  <LogOut></LogOut>
+                  <Button onClick={logoutHandler} variant="link">
+                    Logout
+                  </Button>
                 </div>
               </PopoverContent>
             </Popover>

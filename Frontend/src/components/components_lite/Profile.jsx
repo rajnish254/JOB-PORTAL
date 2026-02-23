@@ -1,28 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "./Navbar";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Pen, Mail, Contact } from "lucide-react";
 import { Badge } from "../ui/badge";
 import AppliedJob from "./AppliedJob";
+import EditProfileModal from "./EditProfileModal.jsx";
+import { useSelector } from "react-redux";
 
-const skills = [
-  "React",
-  "JavaScript",
-  "HTML",
-  "CSS",
-  "Python",
-  "Node.js",
-  "MongoDB",
-  "MySQL",
-  "Redux",
-  "Tailwind CSS",
-  "Docker",
-  "Kubernetes",
-];
+// const skills = [
+//   "React",
+//   "JavaScript",
+//   "HTML",
+//   "CSS",
+//   "Python",
+//   "Node.js",
+//   "MongoDB",
+//   "MySQL",
+//   "Redux",
+//   "Tailwind CSS",
+//   "Docker",
+//   "Kubernetes",
+// ];
 
 const Profile = () => {
-  const isResume = true;
+  const [open, setOpen] = useState(false);
+  const { user } = useSelector((store) => store.auth);
+
+  if (!user) {
+    return <div className="text-center mt-10">Loading...</div>;
+  }
+  console.log(user);
+  const isResume = user?.profile?.resume ? true : false;
 
   return (
     <div>
@@ -36,20 +45,21 @@ const Profile = () => {
           <div className="flex justify-between">
             <div className="flex items-center gap-5">
               <Avatar className="h-24 w-24">
-                <AvatarImage
-                  src="https://us.123rf.com/450wm/lukpedclub/lukpedclub2203/lukpedclub220300191/183186889-developer-icon-decentralized-finance-related-vector-illustration.jpg?ver=6"
-                  alt="profile"
-                />
+                <AvatarImage src={user?.profile?.profilePhoto} alt="profile" />
                 <AvatarFallback>RK</AvatarFallback>
               </Avatar>
 
               <div>
-                <h2 className="font-semibold text-xl">Full Name</h2>
-                <p className="text-gray-600">Lorem ipsum dolor sit amet</p>
+                <h2 className="font-semibold text-xl">{user?.fullname}</h2>
+                <p>{user?.profile?.bio}</p>
               </div>
             </div>
 
-            <Button variant="outline">
+            <Button
+              onClick={() => setOpen(true)}
+              className="text-right"
+              variant="outline"
+            >
               <Pen size={16} />
             </Button>
           </div>
@@ -58,11 +68,14 @@ const Profile = () => {
           <div className="mt-6 space-y-3">
             <div className="flex items-center gap-3 text-gray-700">
               <Mail size={18} />
-              <span>rajnish@gmail.com</span>
+              <span className="">
+                <a href={`mailto:${user.email}`}>{user?.email}</a>
+              </span>
             </div>
             <div className="flex items-center gap-3 text-gray-700">
               <Contact size={18} />
-              <span>+919876542360</span>
+              <span className=""></span>
+              <a href={`tel:${user?.phoneNumber}`}>{user?.phoneNumber}</a>
             </div>
           </div>
 
@@ -70,8 +83,8 @@ const Profile = () => {
           <div className="mt-6">
             <h3 className="font-semibold mb-3">Skills</h3>
             <div className="flex flex-wrap gap-2">
-              {skills.length !== 0 ? (
-                skills.map((item, index) => (
+              {user?.profile?.skills.length !== 0 ? (
+                user?.profile?.skills.map((item, index) => (
                   <Badge key={index} className="whitespace-nowrap">
                     {item}
                   </Badge>
@@ -86,13 +99,13 @@ const Profile = () => {
           <div className="mt-6">
             <h3 className="font-semibold mb-2">Resume</h3>
             {isResume ? (
-              <Button
-                variant="link"
-                className="p-0 text-blue-600"
-                href="http://resume.com"
+              <a
+                target="_blank"
+                href={user?.profile?.resume}
+                className="text-blue-600 hover:underline cursor-pointer"
               >
                 Download
-              </Button>
+              </a>
             ) : (
               <span>No Resume found</span>
             )}
@@ -104,6 +117,8 @@ const Profile = () => {
           <h2 className="text-lg font-bold mb-6">Applied Jobs</h2>
           <AppliedJob />
         </div>
+        {/* Edit Profile Modal */}
+        <EditProfileModal open={open} setOpen={setOpen} />
       </div>
     </div>
   );

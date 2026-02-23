@@ -1,6 +1,8 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import getDataUri from "../utils/datauri.js";
+import cloudinary from "../utils/cloud.js";
 
 export const register = async (req, res) => {
   try {
@@ -11,6 +13,10 @@ export const register = async (req, res) => {
         success: false,
       });
     }
+
+    const file = req.file;
+    const fileUri = getDataUri(file);
+    const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
     const user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({
@@ -26,6 +32,9 @@ export const register = async (req, res) => {
       phoneNumber,
       password: hashedPassword,
       role,
+      profile: {
+        profilePhoto: cloudResponse.secure_url,
+      },
     });
     await newUser.save();
 
@@ -76,7 +85,7 @@ export const login = async (req, res) => {
     const tokenData = {
       userId: user._id,
     };
-    const token = await jwt.sign(tokenData, process.env.JWT_SECRET, {
+    const token = jwt.sign(tokenData, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
     user = {
@@ -92,7 +101,8 @@ export const login = async (req, res) => {
       .cookie("token", token, {
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "lax",
+        secure: false,
       })
       .json({
         message: `Welcome back ${user.fullname}`,
@@ -130,10 +140,16 @@ export const logout = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { fullname, email, phonenumber, bio, skills } = req.body;
-    const file = req.files;
+    const { fullname, email, phoneNumber, bio, skills } = req.body;
+    const file = req.file;
 
     //cloudinary upload
+    let cloudinaryResponse = null;
+    if (file) {
+      const fileUri = getDataUri(file);
+      cloudinaryResponse = await cloudinary.uploader.upload(fileUri.content);
+    }
+
     let skillsArray;
     if (skills) {
       skillsArray = skills.split(",");
@@ -147,28 +163,37 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // update database profile
+    //update database profile
     if (fullname) {
       user.fullname = fullname;
     }
     if (email) {
       user.email = email;
     }
-    if (phonenumber) {
-      user.phoneNumber = phonenumber;
+    if (phoneNumber) {
+      user.phoneNumber = phoneNumber;
     }
-    if (bio) {
-      user.profile.bio = bio;
+    if (user.profile) {
+      if (bio) user.profile.bio = bio;
+
+      if (skills) user.profile.skills = skillsArray;
     }
-    if (skills) {
-      user.profile.skills = skillsArray;
+
+    // resume
+
+    if (cloudinaryResponse) {
+      user.profile.resume = cloudinaryResponse.secure_url;
+      user.profile.resumeOriginalName = file.originalname;
     }
+
+    //Save updated user
     await user.save();
+
     user = {
       _id: user._id,
       fullname: user.fullname,
       email: user.email,
-      phonenumber: user.phoneNumber,
+      phoneNumber: user.phoneNumber,
       role: user.role,
       profile: user.profile,
     };
